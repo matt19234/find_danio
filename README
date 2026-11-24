@@ -1,0 +1,43 @@
+A typical workflow may look as follows.
+
+1. Install dependencies:
+> conda env create -f env.yml
+
+2. Add video to src/.
+
+3. Create dataset:
+> python make_raw_dataset.py src/VIDEO.mp4 raw_datasets/DATASET
+
+4. Use labelme (included in env.yaml) to label images in raw_datasets/DATASET/train and raw_datasets/DATASET/val:
+> labelme
+
+5. Create YOLO compatible labels:
+> python make_labelled_data.py raw_datasets/DATASET datasets/DATASET
+
+6. Create dataset manifest DATA.yaml with all desired datasets.
+
+7. Download base models:
+> ./make_base_models.sh
+
+8. Train model:
+> python train.py base_models/BASE_MODEL.pt DATA.yaml models/MODEL.pt
+
+9. Run inference:
+> python find_danio.py models/MODEL.pt src/VIDEO.mp4 results/OUTPUT.mp4
+> for f in src/*; do python find_danio.py models/MODEL "$f" "results/$(basename "$f")"; done
+
+==============================================================================
+
+Note that training is very resource intensive and not advised to do locally. Additional scripts are included to support training and inference on a SLURM scheduled compute cluster.
+
+1. Training:
+(remote) > sbatch train.sh base_models/BASE_MODEL.pt DATA.yaml models/MODEL.pt
+
+2. Upload video files for processing:
+ (local) > rsync -avP src/ REMOTE/src/
+
+3. Run inference:
+(remote) > for f in src/*; do sbatch find_danio.sh models/MODEL "$f" "results/$(basename "$f")"; done
+
+4. Receive processed video files:
+ (local) > rsync -avP REMOTE/results/ results/

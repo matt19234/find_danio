@@ -1,0 +1,9 @@
+results/
+src/
+logs/
+runs/
+data/
+
+.DS_STORE
+log.txt
+*.cache
